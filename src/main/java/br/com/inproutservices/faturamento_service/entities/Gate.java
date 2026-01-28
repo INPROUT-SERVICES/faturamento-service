@@ -14,12 +14,10 @@ public class Gate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Relacionamento local (Agora funciona pois ambos estão no mesmo serviço)
     @OneToOne
     @JoinColumn(name = "solicitacao_faturamento_id", nullable = false)
     private SolicitacaoFaturamento solicitacao;
 
-    // Referência remota ao Monólito (Mudamos de Usuario para Long)
     @Column(name = "usuario_responsavel_id")
     private Long usuarioResponsavelId;
 
@@ -32,9 +30,22 @@ public class Gate {
 
     private LocalDateTime dataAcao;
 
+    // --- CAMPOS ADICIONADOS PARA CORRIGIR O ERRO ---
+    @Column(name = "data_inicio")
+    private LocalDateTime dataInicio;
+
+    @Column(name = "data_fim")
+    private LocalDateTime dataFim;
+    // -----------------------------------------------
+
+    @Column(nullable = false)
+    private String nome;
+
     @PrePersist
     @PreUpdate
     public void prePersist() {
         if (this.dataAcao == null) this.dataAcao = LocalDateTime.now();
+        if (this.dataInicio == null) this.dataInicio = LocalDateTime.now();
+        if (this.dataFim == null) this.dataFim = LocalDateTime.now().plusDays(30); // Exemplo
     }
 }

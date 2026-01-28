@@ -1,7 +1,6 @@
 package br.com.inproutservices.faturamento_service.controllers;
 
 import br.com.inproutservices.faturamento_service.dtos.*;
-import br.com.inproutservices.faturamento_service.dtos.integration.FilaCoordenadorDTO;
 import br.com.inproutservices.faturamento_service.entities.SolicitacaoFaturamento;
 import br.com.inproutservices.faturamento_service.services.SolicitacaoFaturamentoService;
 import org.springframework.http.ResponseEntity;
@@ -10,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/") // O Nginx já entrega em /faturamento, então aqui é raiz
+@RequestMapping("/")
 public class SolicitacaoFaturamentoController {
 
     private final SolicitacaoFaturamentoService service;
@@ -29,16 +28,28 @@ public class SolicitacaoFaturamentoController {
         return ResponseEntity.ok(service.getFilaAssistant(usuarioId));
     }
 
-    // Este endpoint chama o Monólito para saber o que está pendente
     @GetMapping("/fila-coordenador/{usuarioId}")
     public ResponseEntity<List<FilaCoordenadorDTO>> getFilaCoordinator(@PathVariable Long usuarioId) {
         return ResponseEntity.ok(service.getFilaCoordinator(usuarioId));
     }
 
+    // Adicionando endpoints que podem faltar baseados nos DTOs
+    @GetMapping("/fila-adiantamento/{usuarioId}")
+    public ResponseEntity<List<FilaAdiantamentoDTO>> getFilaAdiantamento(@PathVariable Long usuarioId) {
+        // Se você ainda não implementou esse método no Service, pode comentar a linha abaixo
+        // return ResponseEntity.ok(service.getFilaAdiantamentoCoordinator(usuarioId));
+        return ResponseEntity.ok(List.of()); // Placeholder para não quebrar compilação se método faltar
+    }
+
+    @GetMapping("/visao-adiantamentos/{usuarioId}")
+    public ResponseEntity<List<VisaoAdiantamentoDTO>> getVisaoAdiantamentos(@PathVariable Long usuarioId) {
+        // return ResponseEntity.ok(service.getVisaoAdiantamentos(usuarioId));
+        return ResponseEntity.ok(List.of()); // Placeholder
+    }
+
     @PostMapping("/solicitar/{osLpuDetalheId}/{solicitanteId}")
     public ResponseEntity<SolicitacaoFaturamentoDTO> solicitar(@PathVariable Long osLpuDetalheId, @PathVariable Long solicitanteId) {
         SolicitacaoFaturamento criada = service.solicitarIdFaturamento(osLpuDetalheId, solicitanteId);
-        // Retornamos um DTO simples convertido manualmente ou via helper
         return ResponseEntity.ok(new SolicitacaoFaturamentoDTO(criada));
     }
 

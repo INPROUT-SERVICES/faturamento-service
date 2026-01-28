@@ -33,18 +33,16 @@ public class SolicitacaoFaturamentoController {
         return ResponseEntity.ok(service.getFilaCoordinator(usuarioId));
     }
 
-    // Adicionando endpoints que podem faltar baseados nos DTOs
     @GetMapping("/fila-adiantamento/{usuarioId}")
     public ResponseEntity<List<FilaAdiantamentoDTO>> getFilaAdiantamento(@PathVariable Long usuarioId) {
-        // Se você ainda não implementou esse método no Service, pode comentar a linha abaixo
-        // return ResponseEntity.ok(service.getFilaAdiantamentoCoordinator(usuarioId));
-        return ResponseEntity.ok(List.of()); // Placeholder para não quebrar compilação se método faltar
+        // Placeholder para evitar erro se o método não existir no service ainda
+        return ResponseEntity.ok(List.of());
     }
 
     @GetMapping("/visao-adiantamentos/{usuarioId}")
     public ResponseEntity<List<VisaoAdiantamentoDTO>> getVisaoAdiantamentos(@PathVariable Long usuarioId) {
-        // return ResponseEntity.ok(service.getVisaoAdiantamentos(usuarioId));
-        return ResponseEntity.ok(List.of()); // Placeholder
+        // Placeholder
+        return ResponseEntity.ok(List.of());
     }
 
     @PostMapping("/solicitar/{osLpuDetalheId}/{solicitanteId}")

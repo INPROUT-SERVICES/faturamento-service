@@ -4,6 +4,9 @@ import br.com.inproutservices.faturamento_service.clients.MonolitoClient;
 import br.com.inproutservices.faturamento_service.dtos.integration.ItemCandidatoDTO;
 import br.com.inproutservices.faturamento_service.dtos.integration.OsLpuDetalheDTO;
 import br.com.inproutservices.faturamento_service.dtos.integration.UsuarioDTO;
+// --- IMPORT IMPORTANTE ADICIONADO ---
+import br.com.inproutservices.faturamento_service.dtos.*;
+// ------------------------------------
 import br.com.inproutservices.faturamento_service.entities.SolicitacaoFaturamento;
 import br.com.inproutservices.faturamento_service.enums.StatusFaturamento;
 import br.com.inproutservices.faturamento_service.enums.TipoFaturamento;
@@ -31,13 +34,11 @@ public class SolicitacaoFaturamentoService {
 
     @Transactional(readOnly = true)
     public List<SolicitacaoFaturamentoDTO> getFilaAssistant(Long usuarioId) {
-        // 1. Busca dados do usuário no Monólito
         UsuarioDTO usuario = monolitoClient.getUsuario(usuarioId);
 
         List<StatusFaturamento> statuses = List.of(StatusFaturamento.PENDENTE_ASSISTANT, StatusFaturamento.ID_RECEBIDO, StatusFaturamento.ID_RECUSADO);
         List<SolicitacaoFaturamento> lista;
 
-        // 2. Aplica filtro de segmento baseado nos IDs recebidos
         if ("COORDINATOR".equals(usuario.getRole())) {
             if (usuario.getSegmentosIds() == null || usuario.getSegmentosIds().isEmpty()) return List.of();
             lista = repo.findByStatusInAndSegmentoIdIn(statuses, usuario.getSegmentosIds());
@@ -49,10 +50,8 @@ public class SolicitacaoFaturamentoService {
     }
 
     public List<FilaCoordenadorDTO> getFilaCoordinator(Long usuarioId) {
-        // Chama endpoint do Monólito que calcula as pendências operacionais
         List<ItemCandidatoDTO> candidatos = monolitoClient.getItensCandidatos(usuarioId);
 
-        // Remove os que JÁ têm solicitação no nosso banco local
         return candidatos.stream()
                 .filter(c -> !repo.existsByOsLpuDetalheId(c.getOsLpuDetalheId()))
                 .map(c -> {
@@ -73,7 +72,6 @@ public class SolicitacaoFaturamentoService {
 
         long pendenteSolicitacao = 0;
         if (isCoordinator) {
-            // Se for coordenador, consulta API do monólito
             pendenteSolicitacao = getFilaCoordinator(usuarioId).size();
         }
 
@@ -87,7 +85,6 @@ public class SolicitacaoFaturamentoService {
         long pendenteFila = baseQuery.stream().filter(s -> s.getStatus() == StatusFaturamento.PENDENTE_ASSISTANT).count();
         long idsRecusados = baseQuery.stream().filter(s -> s.getStatus() == StatusFaturamento.ID_RECUSADO).count();
 
-        // Correção no filtro de adiantamentos
         long adiantamentos = baseQuery.stream()
                 .filter(s -> s.getTipo() == TipoFaturamento.ADIANTAMENTO && s.getStatus() != StatusFaturamento.FATURADO)
                 .count();
@@ -106,7 +103,6 @@ public class SolicitacaoFaturamentoService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Já existe solicitação.");
         }
 
-        // Busca detalhes no Monólito para salvar o segmentoId
         OsLpuDetalheDTO detalhe = monolitoClient.getDetalhe(osLpuDetalheId);
 
         SolicitacaoFaturamento sol = new SolicitacaoFaturamento();

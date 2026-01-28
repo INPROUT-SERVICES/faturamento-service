@@ -11,6 +11,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -71,5 +72,15 @@ public class GateService {
         return gateRepository.findAll().stream()
                 .map(GateResponseDTO::new)
                 .collect(Collectors.toList());
+    }
+
+    public GateResponseDTO buscarGateVigente() {
+        LocalDate hoje = LocalDate.now();
+        // Lógica trazida do antigo sistema
+        return gateRepository.findAll().stream()
+                .filter(g -> !hoje.isBefore(g.getDataInicio().toLocalDate()) && !hoje.isAfter(g.getDataFim().toLocalDate())) // Ajuste conforme seu tipo de data (LocalDate ou LocalDateTime)
+                .findFirst()
+                .map(GateResponseDTO::new)
+                .orElse(null);
     }
 }

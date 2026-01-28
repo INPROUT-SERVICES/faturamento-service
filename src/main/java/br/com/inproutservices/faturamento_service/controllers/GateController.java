@@ -32,5 +32,11 @@ public class GateController {
     @GetMapping
     public ResponseEntity<List<GateResponseDTO>> listarTodos() {
         return ResponseEntity.ok(gateService.listarTodos());
+
+    }
+
+    @GetMapping("/vigente")
+    public ResponseEntity<GateResponseDTO> getGateVigente() {
+        return ResponseEntity.ok(gateService.buscarGateVigente());
     }
 }

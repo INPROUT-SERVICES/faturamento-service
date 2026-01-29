@@ -1,3 +1,19 @@
+server:
+  port: 8083 # Ou a porta definida no seu docker-compose para este serviço
+  servlet:
+    context-path: / # Garante que não haja duplicidade de contexto
+
 spring:
   application:
     name: faturamento
+  datasource:
+    # Certifique-se de ter as configs de banco aqui, se necessário
+    url: jdbc:postgresql://db:5432/inprout_faturamento # Exemplo
+    username: postgres
+    password: password
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect

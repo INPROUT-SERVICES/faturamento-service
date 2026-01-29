@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/faturamento")
 public class SolicitacaoFaturamentoController {
 
     private final SolicitacaoFaturamentoService service;
@@ -33,18 +33,6 @@ public class SolicitacaoFaturamentoController {
         return ResponseEntity.ok(service.getFilaCoordinator(usuarioId));
     }
 
-    @GetMapping("/fila-adiantamento/{usuarioId}")
-    public ResponseEntity<List<FilaAdiantamentoDTO>> getFilaAdiantamento(@PathVariable Long usuarioId) {
-        // Placeholder para evitar erro se o método não existir no service ainda
-        return ResponseEntity.ok(List.of());
-    }
-
-    @GetMapping("/visao-adiantamentos/{usuarioId}")
-    public ResponseEntity<List<VisaoAdiantamentoDTO>> getVisaoAdiantamentos(@PathVariable Long usuarioId) {
-        // Placeholder
-        return ResponseEntity.ok(List.of());
-    }
-
     @PostMapping("/solicitar/{osLpuDetalheId}/{solicitanteId}")
     public ResponseEntity<SolicitacaoFaturamentoDTO> solicitar(@PathVariable Long osLpuDetalheId, @PathVariable Long solicitanteId) {
         SolicitacaoFaturamento criada = service.solicitarIdFaturamento(osLpuDetalheId, solicitanteId);
@@ -55,5 +43,21 @@ public class SolicitacaoFaturamentoController {
     public ResponseEntity<SolicitacaoFaturamentoDTO> alterarStatus(@PathVariable Long id, @RequestBody AcaoFaturamentoDTO acao) {
         SolicitacaoFaturamento atualizada = service.alterarStatus(id, acao);
         return ResponseEntity.ok(new SolicitacaoFaturamentoDTO(atualizada));
+    }
+
+    @GetMapping("/fila-adiantamento/{usuarioId}")
+    public ResponseEntity<List<FilaAdiantamentoDTO>> getFilaAdiantamento(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(service.getFilaAdiantamento(usuarioId));
+    }
+
+    @GetMapping("/visao-adiantamentos/{usuarioId}")
+    public ResponseEntity<List<VisaoAdiantamentoDTO>> getVisaoAdiantamentos(@PathVariable Long usuarioId) {
+        return ResponseEntity.ok(service.getVisaoAdiantamentos(usuarioId));
+    }
+
+    @PostMapping("/solicitar-adiantamento/{osLpuDetalheId}/{solicitanteId}")
+    public ResponseEntity<SolicitacaoFaturamentoDTO> solicitarAdiantamento(@PathVariable Long osLpuDetalheId, @PathVariable Long solicitanteId) {
+        SolicitacaoFaturamento criada = service.solicitarAdiantamento(osLpuDetalheId, solicitanteId);
+        return ResponseEntity.ok(new SolicitacaoFaturamentoDTO(criada));
     }
 }

@@ -1,18 +1,14 @@
 package br.com.inproutservices.faturamento_service.services;
 
-import br.com.inproutservices.faturamento_service.clients.MonolitoClient;
 import br.com.inproutservices.faturamento_service.dtos.gate.GateCreateDTO;
 import br.com.inproutservices.faturamento_service.dtos.gate.GateResponseDTO;
+import br.com.inproutservices.faturamento_service.dtos.gate.GateUpdateDTO;
 import br.com.inproutservices.faturamento_service.entities.Gate;
-import br.com.inproutservices.faturamento_service.entities.SolicitacaoFaturamento;
 import br.com.inproutservices.faturamento_service.repositories.GateRepository;
-import br.com.inproutservices.faturamento_service.repositories.SolicitacaoFaturamentoRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,50 +16,27 @@ import java.util.stream.Collectors;
 public class GateService {
 
     private final GateRepository gateRepository;
-    private final SolicitacaoFaturamentoRepository solicitacaoRepository;
-    private final MonolitoClient monolitoClient;
 
-    public GateService(GateRepository gateRepository,
-                       SolicitacaoFaturamentoRepository solicitacaoRepository,
-                       MonolitoClient monolitoClient) {
+    public GateService(GateRepository gateRepository) {
         this.gateRepository = gateRepository;
-        this.solicitacaoRepository = solicitacaoRepository;
-        this.monolitoClient = monolitoClient;
     }
 
     @Transactional
-    public GateResponseDTO registrarAprovacao(GateCreateDTO dto) {
-        // 1. Busca a solicitação localmente
-        SolicitacaoFaturamento solicitacao = solicitacaoRepository.findById(dto.getSolicitacaoId())
-                .orElseThrow(() -> new EntityNotFoundException("Solicitação de Faturamento não encontrada com ID: " + dto.getSolicitacaoId()));
-
-        // 2. Valida usuário no Monólito (Opcional, mas garante consistência)
-        try {
-            monolitoClient.getUsuario(dto.getUsuarioId());
-        } catch (Exception e) {
-            // Se o usuário não existir ou o monólito estiver fora, podemos decidir lançar erro ou seguir apenas com o ID
-            // throw new EntityNotFoundException("Usuário inválido ou serviço indisponível.");
-        }
-
-        // 3. Verifica se já existe Gate para essa solicitação (Regra de Negócio: Atualiza ou Cria?)
-        // Aqui assumimos que cria ou atualiza o existente
-        Gate gate = gateRepository.findBySolicitacaoId(dto.getSolicitacaoId())
-                .orElse(new Gate());
-
-        gate.setSolicitacao(solicitacao);
-        gate.setUsuarioResponsavelId(dto.getUsuarioId()); // Salvamos o ID remoto
-        gate.setStatus(dto.getStatus());
-        gate.setObservacao(dto.getObservacao());
-        gate.setDataAcao(LocalDateTime.now());
+    public GateResponseDTO criar(GateCreateDTO dto) {
+        Gate gate = new Gate();
+        gate.setNome(dto.nome());
+        gate.setDataInicio(dto.dataInicio());
+        gate.setDataFim(dto.dataFim());
+        gate.setCriadoPorUsuarioId(dto.usuarioId());
 
         Gate salvo = gateRepository.save(gate);
         return new GateResponseDTO(salvo);
     }
 
     @Transactional(readOnly = true)
-    public GateResponseDTO buscarPorSolicitacao(Long solicitacaoId) {
-        Gate gate = gateRepository.findBySolicitacaoId(solicitacaoId)
-                .orElseThrow(() -> new EntityNotFoundException("Nenhum registro de Gate encontrado para a solicitação: " + solicitacaoId));
+    public GateResponseDTO buscarPorId(Long id) {
+        Gate gate = gateRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Gate não encontrado com o ID: " + id));
         return new GateResponseDTO(gate);
     }
 
@@ -74,22 +47,25 @@ public class GateService {
                 .collect(Collectors.toList());
     }
 
-    public GateResponseDTO buscarGateVigente() {
-        LocalDate hoje = LocalDate.now();
-        // Lógica trazida do antigo sistema
-        return gateRepository.findAll().stream()
-                .filter(g -> !hoje.isBefore(g.getDataInicio().toLocalDate()) && !hoje.isAfter(g.getDataFim().toLocalDate())) // Ajuste conforme seu tipo de data (LocalDate ou LocalDateTime)
-                .findFirst()
-                .map(GateResponseDTO::new)
-                .orElse(null);
+    @Transactional
+    public GateResponseDTO atualizar(Long id, GateUpdateDTO dto) {
+        Gate gate = gateRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Gate não encontrado com o ID: " + id));
+
+        gate.setNome(dto.nome());
+        gate.setDataInicio(dto.dataInicio());
+        gate.setDataFim(dto.dataFim());
+        gate.setAlteradoPorUsuarioId(dto.usuarioId());
+
+        Gate atualizado = gateRepository.save(gate);
+        return new GateResponseDTO(atualizado);
     }
 
     @Transactional
     public void excluir(Long id) {
         if (!gateRepository.existsById(id)) {
-            throw new EntityNotFoundException("Gate não encontrado com ID: " + id);
+            throw new EntityNotFoundException("Gate não encontrado com o ID: " + id);
         }
-
         gateRepository.deleteById(id);
     }
 }

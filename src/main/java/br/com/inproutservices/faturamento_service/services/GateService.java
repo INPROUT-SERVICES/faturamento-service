@@ -83,4 +83,13 @@ public class GateService {
                 .map(GateResponseDTO::new)
                 .orElse(null);
     }
+
+    @Transactional
+    public void excluir(Long id) {
+        if (!gateRepository.existsById(id)) {
+            throw new EntityNotFoundException("Gate não encontrado com ID: " + id);
+        }
+
+        gateRepository.deleteById(id);
+    }
 }

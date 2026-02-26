@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/gate") // Rota base: /faturamento/gate (via Nginx)
+@RequestMapping("/api/gates") // Corrigido para casar exatamente com a chamada do front-end
 public class GateController {
 
     private final GateService gateService;
@@ -32,11 +32,16 @@ public class GateController {
     @GetMapping
     public ResponseEntity<List<GateResponseDTO>> listarTodos() {
         return ResponseEntity.ok(gateService.listarTodos());
-
     }
 
     @GetMapping("/vigente")
     public ResponseEntity<GateResponseDTO> getGateVigente() {
         return ResponseEntity.ok(gateService.buscarGateVigente());
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirGate(@PathVariable Long id) {
+        gateService.excluir(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
-@FeignClient(name = "monolito-client", url = "${APP_MONOLITH_URL}")
+@FeignClient(name = "monolito-client", url = "${APP_MONOLITH_URL:http://localhost:8080}")
 public interface MonolitoClient {
 
     @GetMapping("/api/integracao/faturamento/usuario/{id}")

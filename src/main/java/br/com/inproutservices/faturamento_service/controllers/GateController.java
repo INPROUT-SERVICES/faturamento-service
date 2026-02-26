@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/gates") // Corrigido para casar exatamente com a chamada do front-end
+@RequestMapping("/gates") // Corrigido para casar exatamente com a chamada do front-end
 public class GateController {
 
     private final GateService gateService;
